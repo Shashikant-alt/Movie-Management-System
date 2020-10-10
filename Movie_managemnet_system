@@ -1,0 +1,765 @@
+#include <iostream.h>
+#include <stdio.h>
+#include <conio.h>
+#include <stdlib.h>
+#include <fstream.h>
+#include <string.h>
+int noofmov=0;
+int adminpass=9303;
+int noofuser=0;
+class movie
+{
+	public:
+	char moviename[50];
+	int movno;
+	int date,year,month,hour,minute,seconds;
+	int seats;
+	int noofmov;
+	void getmovie()
+	{
+		clrscr();
+		cout<<"\n\n------NEW MOVIE RECORD------";
+		cout<<"\n\nEnter Movie Name  :";
+		gets(moviename);
+		cout<<"\nEnter movie number  :";
+		cin>>movno;
+		cout<<"\nEnter date  :";
+		cin>>date;
+		cout<<"\nEnter month  :";
+		cin>>month;
+		cout<<"\nEnter year  :";
+		cin>>year;
+		cout<<"\nEnter hour of showtime (in 24 hr format)  :";
+		cout<<"\nEnter hour : ";
+		cin>>hour;
+		cout<<"\nEnter minutes  :";
+		cin>>minute;
+		cout<<"\nEnter seconds : ";
+		cin>>seconds;
+		cout<<"\nEnter number of seats available  :";
+		cin>>seats;
+		cout<<"\n\nDetails entered successfully.";
+		cout<<"\n";
+		cout<<"\nRedirecting to admin menu, press any key to continue...";
+		getch();
+	}
+	void showmovie()
+	{
+		cout<<"\n\n";
+		cout<<"\nName of movie              :";
+		puts(moviename);
+		cout<<"Movie number                 :"<<movno;
+		cout<<"\nDate                       :"<<date<<"/"<<month<<"/"<<year;
+		cout<<"\nTime                       :"<<hour<<":"<<minute<<":"<<seconds;
+		cout<<"\nNumber of seats available  :"<<seats;
+	}
+};
+void insertmovie()
+{
+	fstream fs;;
+	movie m;
+	fs.open("movies.dat",ios::out|ios::binary);
+	m.getmovie();
+	fs.write((char*)&m,sizeof(m));
+	fs.close();
+	noofmov=noofmov+1;
+}
+void insertmovieappend()
+{
+	fstream fs;
+	movie m;
+	fs.open("movies.dat",ios::app|ios::binary);
+	m.getmovie();
+	fs.write((char*)&m,sizeof(m));
+	fs.close();
+	noofmov=noofmov+1;
+}
+void modifymovie()
+{
+	fstream fs,temp;
+	movie m,m1;
+	int movienum;
+	fs.open("movies.dat",ios::in|ios::binary);
+	temp.open("tmovie.dat",ios::out|ios::binary);
+	if(noofmov==0)
+	{
+		clrscr();
+		cout<<"\nNo movies are there in database.";
+		cout<<"\n\nRedirecting to admin menu, press any key to continue...";
+		getch();
+		return;
+	}
+	else
+	{
+	cout<<"\nEnter the number of movie which you wish to modify  :";
+	cin>>movienum;
+	while(fs.read((char*)&m,sizeof(m)))
+	{
+		if(m.movno==movienum)
+		{
+			cout<<"\nRecord Found";
+			cout<<"\n\nYou'll now be redirected to a new screen to enter new details, press any key to continue...";
+			getch();
+			m1.getmovie();
+			temp.write((char*)&m1,sizeof(m1));
+		}
+		else
+		{
+			temp.write((char*)&m,sizeof(m));
+		}
+	}
+	}
+	fs.close();
+	temp.close();
+	remove("movies.dat");
+	rename("tmovie.dat","movies.dat");
+}
+void deletemovie()
+{
+	fstream fs, temp;
+	movie m,m1;
+	int movienum,check;
+	fs.open("movies.dat",ios::in|ios::binary);
+	temp.open("tmovie.dat",ios::out|ios::binary);
+	if(noofmov==0)
+	{
+		clrscr();
+		cout<<"\nNo movies are there in database.";
+		cout<<"\n\nReturning to admin menu, press any key to continue...";
+		getch();
+		return;
+	}
+	else
+	{
+	cout<<"\nEnter the number of movie which you wish to Delete  :";
+	cin>>movienum;
+	while(fs.read((char*)&m,sizeof(m)))
+	{
+		if(m.movno==movienum)
+		{
+			check=1;
+			cout<<"\nRecord Found";
+			cout<<"\nRecord Deleted";
+			noofmov=noofmov-1;
+			cout<<"\n\nRedirecting to admin menu, press any key to continue...";
+			getch();
+		}
+		else
+		{
+			temp.write((char*)&m,sizeof(m));
+		}
+	}
+	if(check!=1)
+	{
+		cout<<"\n\nNo movie record found with that number!!";
+		cout<<"\n\nRedirecting to admin menu, press any key to continue...";
+		getch();
+	}
+	}
+	fs.close();
+	temp.close();
+	remove("movies.dat");
+	rename("tmovie.dat","movies.dat");
+}
+void dispmovie()
+{
+	fstream fs;
+	if(noofmov==0)
+	{
+		cout<<"\n\nNo movies in database, retry after sometime";
+		cout<<"\nSorry for the inconvenience caused!!";
+		cout<<"\n\nPress any key to continue...";
+		getch();
+		clrscr();
+		return;
+	}
+	fs.open("movies.dat",ios::in|ios::binary);
+	movie m;
+	while(fs.read((char*)&m,sizeof(m)))
+	{
+		m.showmovie();
+	}
+	fs.close();
+}
+class admin
+{
+	public:
+		char Id[4];
+		char Name[20];
+		int password;
+		admin()
+		{
+			strcpy(Id,"2904");
+			strcpy(Name,"Shashikant");
+		}
+		void addmovierecord()
+		{
+			if(noofmov==0)
+			{
+				insertmovie();
+			}
+			else if(noofmov>0)
+			{
+				insertmovieappend();
+			}
+			else
+			{
+				cout<<"\nError";
+			}
+		}
+		void updatemovierecord()
+		{
+			if(noofmov==0)
+			{
+				cout<<"\n0 movies in database, nothing present to modify.";
+			}
+			else if(noofmov>0)
+			{
+				modifymovie();
+			}
+			else
+			{
+				cout<<"\nError";
+			}
+		}
+};
+admin ad;
+class user:public movie
+{
+	public:
+		int Id;
+		char Name[20];
+		double PhnNo;
+		char Address[20];
+		long int password;
+		float payment;
+		int tc;
+		user()
+		{
+			tc=0;
+		}
+		void newuser()
+		{
+			cout<<"\nEnter Id  :";
+			cin>>Id;
+			cout<<"Enter Name  :";
+			gets(Name);
+			cout<<"Enter Address  :";
+			gets(Address);
+			cout<<"Enter 8 digit phone number  :";
+			cin>>PhnNo;
+			cout<<"Enter 6 digit password  :";
+			cin>>password;
+			noofuser++;
+		}
+		void display()
+		{
+			if(noofuser==0)
+			{
+				cout<<"\nNo users registered, nothing to display";
+				return;
+			}
+			else if(noofuser>0)
+			{
+				cout<<"\nName  :";
+				puts(Name);
+				cout<<"\nId  :"<<Id;
+				cout<<"\nAAddress  :";
+				puts(Address);
+				cout<<"\nPhone Number  :";
+				cout<<PhnNo;
+			}
+			else
+			{
+				cout<<"\nError";
+			}
+		}
+};
+void insertuser()
+{
+	fstream nu;
+	user u;
+		nu.open("users.dat",ios::out|ios::binary);
+		u.newuser();
+		nu.write((char*)&u,sizeof(u));
+		nu.close();
+		noofuser=noofuser+1;
+}
+void userappend()
+{
+	fstream nu;
+	user u;
+	nu.open("users.dat",ios::app|ios::binary);
+	u.newuser();
+	nu.write((char*)&u,sizeof(u));
+	nu.close();
+	noofuser=noofuser+1;
+}
+void bookticket()
+{
+int mno;
+clrscr();
+cout<<"\n\n------TICKET BOOKING MENU------";
+fstream fs,nu,temp1,temp2;
+movie m;
+user u;
+int s,Id1;
+if(noofuser==0)
+{
+	cout<<"\n\nNo user database found";
+	cout<<"\n\nRedirecting to user menu, press any key to continue";
+	getch();
+	return;
+}
+cout<<"\n\nEnter user id to book ticket  :";
+cin>>Id1;
+fs.open("movies.dat",ios::in|ios::binary);
+nu.open("users.dat",ios::in|ios::binary);
+temp2.open("tuser.dat",ios::out|ios::binary);
+
+	while(nu.read((char*)&u,sizeof(u)))
+	{
+		if(u.Id==Id1)
+		{
+			if(u.tc==1)
+			{
+				cout<<"\n\nA ticket booking is already there for the user, can't book mpre tickets";
+				cout<<"\n\nRedirecting to user menu, press any key to continue...";
+				getch();
+			}
+			else
+			{
+				cout<<"\n\nEnter the movie number for which you want to book tickets for  :";
+				cin>>mno;
+				while(fs.read((char*)&m,sizeof(m)))
+					{
+						if(m.movno==mno)
+						{
+							cout<<"\n\nNumber of seats available for this movie  :"<<m.seats;
+							cout<<"\n\nHow many seats would you like to book  :";
+							cin>>s;
+							m.seats=m.seats-s;
+							u.seats=s;
+							strcpy(u.moviename,m.moviename);
+							u.seconds=m.seconds;
+							u.minute=m.minute;
+							u.hour=m.hour;
+							u.date=m.date;
+							u.month=m.month;
+							u.year=m.year;
+							u.tc=1;
+							u.payment=0;
+							cout<<"\n\nTicket booked successfully.";
+							cout<<"\n\nRedirecting to user menu, press any key to continue...";
+							getch();
+
+						}
+					}
+			}
+		temp2.write((char*)&u,sizeof(u));
+		}
+		else
+		{
+			temp2.write((char*)&u,sizeof(u));
+		}
+	}
+fs.close();
+nu.close();
+temp2.close();
+remove("users.dat");
+rename("tuser.dat","users.dat");
+}
+void makepayment()
+{
+	clrscr();
+	cout<<"\n\n-----PAYMENT------";
+	int card,id;
+	fstream fs,temp;
+	if(noofuser==0)
+	{
+		cout<<"\n\nNo user database found";
+		cout<<"\n\nRedirecting to user menu, press any key to continue...";
+		getch();
+		return;
+	}
+	fs.open("users.dat",ios::in|ios::binary);
+	temp.open("tuser.dat",ios::out|ios::binary);
+	user u;
+	cout<<"\n\nEnter id of user  :";
+	cin>>id;
+	while(fs.read((char*)&u,sizeof(u)))
+	{
+		if(u.Id==id)
+		{
+			if(u.tc==0)
+			{
+				cout<<"\n\nNo tickets booked for the user!";
+				cout<<"\n\nReturning to user menu, press any key to continue...";
+				getch();
+			}
+			else if(u.payment==0)
+			{
+				cout<<"\n\nTotal price of the tickets  :"<<u.seats*100;
+				cout<<"\n\nEnter 4 digit card number to initialize payment  :";
+				cin>>card;
+				u.payment=1;
+				cout<<"\n\nPayment successful";
+				cout<<"\n\nReturning to user menu, press any key to continue...";
+				getch();
+			}
+			else if(u.payment==1)
+			{
+				cout<<"\n\nNo pending payments for the user!";
+				cout<<"\n\nReturning to user menu, press any key to continue...";
+				getch();
+			}
+			else
+			{
+				cout<<"\n\nError";
+			}
+			temp.write((char*)&u,sizeof(u));
+		}
+		else
+		{
+			temp.write((char*)&u,sizeof(u));
+		}
+	}
+fs.close();
+temp.close();
+remove("users.dat");
+rename("tuser.dat","users.dat");
+}
+void deleteticket()
+{
+	clrscr();
+	cout<<"\n\n------DELETE TICKET SCREEN------";
+	fstream fs,temp;
+	user u;
+	int id;
+	fs.open("users.dat",ios::in|ios::binary);
+	temp.open("tuser.dat",ios::out|ios::binary);
+	if(noofuser==0)
+	{
+		cout<<"\n\nNo user database present";
+		cout<<"\n\nRedirecting to user menu, press any key to continue...";
+		fs.close();
+		temp.close();
+		getch();
+	}
+	else
+	{
+		cout<<"\n\nEnter the Id of user  :";
+		cin>>id;
+		while(fs.read((char*)&u,sizeof(u)))
+		{
+			if(u.Id==id)
+			{
+				cout<<"\n\nUser found!!";
+				if(u.tc==0)
+				{
+					cout<<"\n\nNo ticket booking found for the user!";
+					cout<<"\n\nRedirecting to user menu, press any key to continue...";
+					getch();
+				}
+				else if(u.tc==1)
+				{
+					cout<<"\n\nTicket cancelled !!";
+					u.tc=0;
+					cout<<"\n\nRedirecting to user menu, press any key to continue...";
+					getch();
+				}
+				else
+				{
+					cout<<"\n\nError";
+				}
+				temp.write((char*)&u,sizeof(u));
+			}
+			else
+			{
+				temp.write((char*)&u,sizeof(u));
+			}
+		}
+	}
+	fs.close();
+	temp.close();
+	remove("users.dat");
+	rename("tuser.dat","users.dat");
+}
+void showticket()
+{
+	clrscr();
+	int id;
+	cout<<"\n\n------TICKET DETAILS------";
+	fstream fs;
+	user u;
+		if(noofuser==0)
+	{
+		cout<<"\n\nNo user database found";
+		cout<<"\n\nRedirecting to user menu, press any key to continue...";
+		getch();
+		return;
+	}
+	cout<<"\n\nEnter Id of user :";
+	cin>>id;
+	fs.open("users.dat",ios::in|ios::binary);
+	while(fs.read((char*)&u,sizeof(u)))
+	{
+		if(u.Id==id)
+		{
+			if(u.tc==1)
+			{
+				cout<<"\nName                    :";
+				puts(u.Name);
+				cout<<"Id                      :"<<u.Id;
+				cout<<"\nAddress                 :";
+				puts(u.Address);
+				cout<<"Phone Number            :";
+				cout<<u.PhnNo;
+				cout<<"\nMovie Name              :";
+				puts(u.moviename);
+				cout<<"Showtime                : "<<u.hour<<":"<<u.minute<<":"<<u.seconds;
+				cout<<"\nDate                    :"<<u.date<<"/"<<u.month<<"/"<<u.year;
+				cout<<"\nNumber of seats booked  :"<<u.seats;
+				cout<<"\nPayment                 :";
+				if(u.payment==1)
+				{
+					cout<<"Done";
+				}
+				else
+				{
+					cout<<"Pending";
+				}
+			}
+			else if(u.tc==0)
+			{
+				cout<<"\n\nNo bookings for the user to display!!!";
+			}
+			else
+			{
+				cout<<"\nError!";
+			}
+		}
+	}
+	fs.close();
+	cout<<"\n\nRedirecting to user menu, press any key to continue...";
+	getch();
+}
+void adminmenu()
+{
+	int pass,a;
+	clrscr();
+	int ch;
+	cout<<"\n\n------ADMIN MENU------";
+	cout<<"\n\nEnter 4 digit password to access admin menu functionalities  :";
+	cin>>pass;
+	if(pass==adminpass)
+	{
+		cout<<"\nLogin Successful!!";
+		a=1;
+		cout<<"\n\nRedirecting to admin menu, press any key to continue...";
+		getch();
+	}
+	else
+	{
+		a=0;
+	}
+	if(a==1)
+	{
+		while(1)
+		{
+		clrscr();
+		cout<<"\n\n         ------ADMIN MENU------";
+		cout<<"\n\nWelcome Administrator Shashikant Solanki , Id 2904";
+		cout<<"\n\n          1.Add movie record.";
+		cout<<"\n         2.Delete movie record.";
+		cout<<"\n         3.Modify movie record.";
+		cout<<"\n   4.See number of movies in database.";
+		cout<<"\n        5.Go back to main menu.";
+		cout<<"\n\nEnter choice  :";
+		cin>>ch;
+		switch(ch)
+		{
+			case 1:
+				if(noofmov==0)
+				{
+					insertmovie();
+				}
+				else
+				{
+					insertmovieappend();
+				}
+				break;
+			case 2:
+				deletemovie();
+				break;
+			case 3:
+				modifymovie();
+				break;
+			case 4:
+				clrscr();
+				cout<<"\n\nNumber of movies in databse are  :"<<noofmov;
+				cout<<"\n\nRedirecting to admin menu, press any key to continue...";
+				getch();
+				break;
+			case 5:
+				cout<<"\n\nRedirecting to main menu, press any key to continue...";
+				getch();
+				return;
+
+			default:
+				cout<<"\nWrong Choice entered!!!";
+		}
+		}
+
+	}
+	else
+	{
+		cout<<"\nLogin Failed!!!";
+		cout<<"\n\nRedirecting to main menu, press any key to continue...";
+		getch();
+		return;
+	}
+}
+void visitormenu()
+{
+		int ch;
+while(1)
+{
+	clrscr();
+	cout<<"\n\n            ------VISITOR MENU------";
+	cout<<"\n\nWelcome visitor, choose from the following options  :";
+	cout<<"\n\n                1.View Movies";
+	cout<<"\n               2.Get Registered";
+	cout<<"\n             3.Return to main menu";
+	cout<<"\n\nEnter choice  :";
+	cin>>ch;
+	switch(ch)
+	{
+		case 1:
+			clrscr();
+			cout<<"\n\nMovies Showing Now:  ";
+			dispmovie();
+			cout<<"\n\nYou have to be registered in order to book a ticket.";
+			cout<<"\n\nRedirecting to Visitor menu, press any key to continue...";
+			getch();
+			break;
+		case 2:
+			cout<<"\n\n------USER REGISTRATION------";
+			if(noofuser==0)
+			{
+				clrscr();
+				cout<<"\n\nWelcome to new user registration!!!";
+				insertuser();
+				cout<<"\n\nRegistration Successful!!!";
+				cout<<"\n\nRedirecting to main menu, press any key to continue...";
+				getch();
+				return;
+			}
+			else
+			{
+				clrscr();
+				cout<<"\n\nWelcome to new user registration2!!!";
+				userappend();
+				cout<<"\n\nRegistration Successful!!!";
+				cout<<"\n\nRedirecting to main menu, press any key to continue...";
+				getch();
+				return;
+			}
+
+		case 3:
+			cout<<"\n\nRedirecting to main menu, press any key to continue...";
+			getch();
+			return;
+		default:
+			cout<<"\n\nWrong choice entered!!!";
+	}
+}
+}
+void usermenu()
+{
+	clrscr();
+	int c1;
+			while(1)
+			{
+			clrscr();
+			cout<<"\n\n------USER MENU------";
+			cout<<"\n\n   1.Book Ticket";
+			cout<<"  \n  2.Make Payment";
+			cout<<"  \n   3.Show ticket";
+			cout<<"  \n  4.Delete Ticket";
+			cout<<"  \n   5.Main menu";
+			cout<<"\n\nEnter option  :";
+			cin>>c1;
+			switch(c1)
+			{
+				case 1:
+					bookticket();
+					break;
+				case 2:
+					makepayment();
+					break;
+				case 3:
+					showticket();
+					break;
+				case 4:
+					deleteticket();
+					break;
+				case 5:
+					cout<<"\n\nRedirecting to main menu, press any key to conitnue...";
+					getch();
+					return;
+				default:
+					cout<<"Wong choice entered!!!";
+			}
+
+}
+}
+void main()
+{
+	clrscr();
+	int choice;
+	cout<<"\n------MOVIE TICKET BOOKING SYSTEM------\n";
+	cout<<"\n    Project by - Shashikant Solanki";
+	cout<<"\n    Department - Computer Science";
+	cout<<"\n       Section - 3CSE5";
+	cout<<"\nEnrollment No. - A2305219303";
+	cout<<"\n       Subject - Object Oriented Programming using C++";
+	cout<<"\n  Subject Code - ES203";
+	cout<<"\n       Faculty - Dr. Vasudha Vashisht";
+	cout<<"\n\nPress any key to continue...";
+	getch();
+	while(1)
+	{
+		clrscr();
+		cout<<"\n------WELCOME TO 3CSE5 MOVIES------\n";
+		cout<<"\n          ---MAIN MENU---          \n";
+		cout<<"\n        1.Administrator Menu         ";
+		cout<<"\n           2.Visitor Menu            ";
+		cout<<"\n       3.Registered User Menu        ";
+		cout<<"\n              4.Exit                 ";
+		cout<<"\n\nEnter choice  :";
+		cin>>choice;
+		switch(choice)
+		{
+			case 1:
+				adminmenu();
+				break;
+			case 2:
+				visitormenu();
+				break;
+			case 3:
+				usermenu();
+				break;
+			case 4:
+				clrscr();
+				cout<<"\n\nThank you for visiting 3CSE5 movies,\nWe'll be looking forward to be of service again,\nHave a nice day";
+				cout<<"\n\nProgram exiting, press any key...";
+				getch();
+				return;
+			default:
+				cout<<"\n\nWrong Choice!!!";
+
+		}
+
+	}
+}
